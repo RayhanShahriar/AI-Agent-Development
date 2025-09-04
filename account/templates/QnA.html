@@ -7,11 +7,11 @@
     <title>RAG QnA</title>
     <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="{% static 'css/QnA.css' %}">
-
+    
 </head>
 <body>
 <div class="container">
-    <h1>Welcome, what's your query?</h1>
+    <h1>Welcome, What's Your Query?</h1>
 
     <div class="status">
         <p>Status: {{ status_msg }}</p>
@@ -20,35 +20,29 @@
     <!-- LLM Provider & Model Selector -->
     <form action="{% url 'configure_llm' %}" method="post">
         {% csrf_token %}
-        <label for="llm_provider">PROVIDER:</label>
-        {% if providers %}
-            <select name="llm_provider" id="llm_provider">
-                {% for provider, data in providers.items %}
-                    <option value="{{ provider }}" {% if current.provider == provider %}selected{% endif %}>
-                        {{ provider }}
-                    </option>
-                {% endfor %}
-            </select>
-        {% else %}
-            <p><em>No providers available.</em></p>
-        {% endif %}
+        <label for="llm_provider">Provider:</label>
+        <select name="llm_provider" id="llm_provider">
+            {% for provider, data in providers.items %}
+                <option value="{{ provider }}" {% if current.provider == provider %}selected{% endif %}>
+                    {{ provider }}
+                </option>
+            {% endfor %}
+        </select>
 
-        <label for="model_name">MODEL:</label>
+        <label for="model_name">Model:</label>
         <input type="text" name="model_name" id="model_name"
-               value="{% if current.model %}{{ current.model }}{% elif provider_models and provider_models.0 %}{{ provider_models.0 }}{% else %}gpt-4{% endif %}">
+               value="{{ current.model|default:provider_models.0 }}">
 
         <button type="submit">Save LLM</button>
     </form>
 
-    <hr>
-
+    
     <!-- Ask Question Form -->
     <form action="{% url 'rag_qna_page' %}" method="post">
         {% csrf_token %}
         {{ ask_form.question }}
         <button type="submit">Ask</button>
     </form>
-
 
     <!-- Chat Display -->
     <div class="chat-box">
@@ -58,12 +52,13 @@
                 {% if message.llm %}<small>(LLM: {{ message.llm }})</small>{% endif %}
             </div>
         {% empty %}
-            <p>No chat history yet.</p>
+            <p>No chat history yet. Ask a question!</p>
         {% endfor %}
     </div>
 
+
     <!-- Clear Chat Form -->
-    <form action="{% url 'clear_chat' %}" method="post" class="form-inline">
+    <form action="{% url 'clear_chat' %}" method="post">
         {% csrf_token %}
         <button type="submit" class="btn-clear">Clear Chat</button>
     </form>
