@@ -1,21 +1,72 @@
 {% load static %}
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Ask a Question</title>
+    <title>RAG QnA</title>
+    <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="{% static 'css/QnA.css' %}">
+
 </head>
 <body>
-    <div class="qna-container">
-        <h1>How can I help you today?</h1>
+<div class="container">
+    <h1>Welcome, what's your query?</h1>
 
-        <form method="post" class="qna-form">
-            {% csrf_token %}
-            <input type="text" name="question" placeholder="Type your question..." autocomplete="off" required>
-            <button type="submit">➤</button>
-        </form>
+    <div class="status">
+        <p>Status: {{ status_msg }}</p>
     </div>
+
+    <!-- LLM Provider & Model Selector -->
+    <form action="{% url 'configure_llm' %}" method="post">
+        {% csrf_token %}
+        <label for="llm_provider">PROVIDER:</label>
+        {% if providers %}
+            <select name="llm_provider" id="llm_provider">
+                {% for provider, data in providers.items %}
+                    <option value="{{ provider }}" {% if current.provider == provider %}selected{% endif %}>
+                        {{ provider }}
+                    </option>
+                {% endfor %}
+            </select>
+        {% else %}
+            <p><em>No providers available.</em></p>
+        {% endif %}
+
+        <label for="model_name">MODEL:</label>
+        <input type="text" name="model_name" id="model_name"
+               value="{% if current.model %}{{ current.model }}{% elif provider_models and provider_models.0 %}{{ provider_models.0 }}{% else %}gpt-4{% endif %}">
+
+        <button type="submit">Save LLM</button>
+    </form>
+
+    <hr>
+
+    <!-- Ask Question Form -->
+    <form action="{% url 'rag_qna_page' %}" method="post">
+        {% csrf_token %}
+        {{ ask_form.question }}
+        <button type="submit">Ask</button>
+    </form>
+
+
+    <!-- Chat Display -->
+    <div class="chat-box">
+        {% for message in chat %}
+            <div class="chat-msg {{ message.who }}">
+                <strong>{{ message.who|title }}:</strong> {{ message.text }}
+                {% if message.llm %}<small>(LLM: {{ message.llm }})</small>{% endif %}
+            </div>
+        {% empty %}
+            <p>No chat history yet.</p>
+        {% endfor %}
+    </div>
+
+    <!-- Clear Chat Form -->
+    <form action="{% url 'clear_chat' %}" method="post" class="form-inline">
+        {% csrf_token %}
+        <button type="submit" class="btn-clear">Clear Chat</button>
+    </form>
+</div>
 </body>
 </html>

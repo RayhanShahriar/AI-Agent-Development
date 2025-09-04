@@ -13,11 +13,34 @@ https://docs.djangoproject.com/en/5.2/ref/settings/
 from pathlib import Path
 from datetime import timedelta
 import os
+from decouple import config
+from dotenv import load_dotenv
+
+
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 RAG_PDF_DIR = BASE_DIR / "data" / "pdfs"      # PDFs are here
 RAG_INDEX_DIR = BASE_DIR / "data" / "index"   # FAISS index will be saved here
+
+
+# Load .env from project root
+dotenv_path = BASE_DIR / ".env"
+load_dotenv(dotenv_path=dotenv_path)  # <-- This line loads your .env keys into os.environ
+
+SECRET_KEY = os.getenv("SECRET_KEY", "fallback-secret-key")
+DEBUG = os.getenv("DEBUG", "True").lower() == "true"
+
+OPENAI_API_KEY = config("OPENAI_API_KEY", default=None)
+GROQ_API_KEY   = config("GROQ_API_KEY", default=None)
+GOOGLE_API_KEY = config("GOOGLE_API_KEY", default=None)
+
+if OPENAI_API_KEY:
+    os.environ["OPENAI_API_KEY"] = OPENAI_API_KEY
+if GROQ_API_KEY:
+    os.environ["GROQ_API_KEY"] = GROQ_API_KEY
+if GOOGLE_API_KEY:
+    os.environ["GOOGLE_API_KEY"] = GOOGLE_API_KEY
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/5.2/howto/deployment/checklist/
@@ -43,8 +66,8 @@ INSTALLED_APPS = [
     'corsheaders',
     'rest_framework',
     'rest_framework_simplejwt',
-    'rag',
     'account',
+    'rag',
 ]
 
 MIDDLEWARE = [

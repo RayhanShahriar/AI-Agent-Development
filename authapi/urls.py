@@ -26,4 +26,9 @@ urlpatterns = [
     path("login/", login_page, name="login_page"),
     path("signup/",signup_page, name="signup_page"),
     path("qna/", qna_page, name="qna_page"),
+    path("api/rag/", include("rag.api_urls")),  # <-- REST API
+    path("rag/", include("rag.urls")), 
+   
 ]
+
+
