@@ -16,7 +16,8 @@ import os
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
-
+RAG_PDF_DIR = BASE_DIR / "data" / "pdfs"      # PDFs are here
+RAG_INDEX_DIR = BASE_DIR / "data" / "index"   # FAISS index will be saved here
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/5.2/howto/deployment/checklist/
