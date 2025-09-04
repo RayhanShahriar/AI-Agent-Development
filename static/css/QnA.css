@@ -1,0 +1,58 @@
+body {
+    background: linear-gradient(135deg, #e91e63, #673ab7);
+    font-family: Arial, sans-serif;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    margin: 0;
+}
+
+.qna-container {
+    text-align: center;
+    width: 100%;
+    max-width: 600px;
+    padding: 20px;
+}
+
+.qna-container h1 {
+    font-size: 28px;
+    font-weight: 500;
+    margin-bottom: 30px;
+    color: #ffffff;
+}
+
+.qna-form {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background: white;
+    border-radius: 12px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    padding: 10px;
+    border: 1px solid #ddd;
+}
+
+.qna-form input {
+    border: none;
+    flex: 1;
+    font-size: 16px;
+    padding: 10px;
+    outline: none;
+    background: transparent;
+}
+
+.qna-form button {
+    background: #f5f0ec;
+    border: none;
+    padding: 8px 14px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 18px;
+}
+
+.qna-form button:hover {
+    background: #e4ddd8;
+}
+
+

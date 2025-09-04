@@ -1,0 +1,21 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ask a Question</title>
+    <link rel="stylesheet" href="{% static 'css/QnA.css' %}">
+</head>
+<body>
+    <div class="qna-container">
+        <h1>How can I help you today?</h1>
+
+        <form method="post" class="qna-form">
+            {% csrf_token %}
+            <input type="text" name="question" placeholder="Type your question..." autocomplete="off" required>
+            <button type="submit">➤</button>
+        </form>
+    </div>
+</body>
+</html>

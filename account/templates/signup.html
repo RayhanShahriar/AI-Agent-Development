@@ -1,0 +1,40 @@
+{% load static %}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Sign Up</title>
+  <link rel="stylesheet" href="{% static 'css/style.css' %}">
+  <style>
+  button {
+    margin-top: 10px;
+
+    }
+  </style>
+  </head>
+
+<body>
+  <div class="login-box">
+    <h2>Sign Up</h2>
+
+    <form method="post" autocomplete="off">
+      {% csrf_token %}
+
+      {{ form.name }}
+      {{ form.email }}
+      {{ form.password }}
+      {{ form.password2 }}
+
+      <div class="form-check mt-3">
+        {{ form.tc }}
+        <label class="form-check-label">{{ form.tc.label }}</label>
+      </div>
+
+      <button type="submit" class="btn btn-success mt-3">Register</button>
+    </form>
+  </div>
+</body>
+
+</html>
+
