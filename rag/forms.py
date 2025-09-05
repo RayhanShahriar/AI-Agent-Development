@@ -1,7 +1,7 @@
 from django import forms
 
 PROVIDERS = (
-    ("openai", "openai"),
+    ("openai", "openai"), #Value, label
     ("groq", "groq"),
     ("google", "google"),
 )

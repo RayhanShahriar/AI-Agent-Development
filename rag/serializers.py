@@ -7,7 +7,7 @@ class LLMConfigRequestSerializer(serializers.Serializer):
 class QuestionRequestSerializer(serializers.Serializer):
     question      = serializers.CharField()
     llm_provider  = serializers.ChoiceField(choices=["openai", "groq", "google"], required=False)
-    model_name    = serializers.CharField(required=False)
+    model_name    = serializers.ChoiceField(required=False)
 
 class QuestionResponseSerializer(serializers.Serializer):
     answer   = serializers.CharField()

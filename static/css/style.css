@@ -1,7 +1,13 @@
 
     body {
-      font-family: Arial, sans-serif;
-      background: linear-gradient(135deg, #ca6083, #8264b6);
+      font-family: 'Montserrat', sans-serif;
+      background: linear-gradient(
+             90deg,          /* Diagonal */
+             #282F43 0%,      /* Start */
+             #3E3664 30%,     /* Smoothly blend */
+             #672162 65%,     /* More smooth blending */
+             #9B2063 100%     /* End */
+      );
       display: flex;
       justify-content: center;
       align-items: center;
@@ -12,7 +18,7 @@
       padding: 30px;
       border-radius: 10px;
       height: 50%;
-      width: 30%;
+      width: 20%;
       text-align: center;
     }
     .login-box h2 {

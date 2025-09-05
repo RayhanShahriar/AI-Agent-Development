@@ -1,4 +1,5 @@
 import os
+import re
 from pathlib import Path
 from typing import Tuple, Dict, Any, Optional
 
@@ -19,7 +20,6 @@ OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
 GROQ_API_KEY   = os.getenv("GROQ_API_KEY")
 GOOGLE_API_KEY = os.getenv("GOOGLE_API_KEY")
 
-
 # ---- Data path ----
 BASE_DIR = Path(__file__).resolve().parents[1]  # .../authapi/
 PDF_DIR  = BASE_DIR / "data" / "pdfs"
@@ -28,6 +28,10 @@ PDF_DIR  = BASE_DIR / "data" / "pdfs"
 retriever = None
 current_llm_config = {"provider": "google", "model": "gemini-1.5-flash"}
 
+
+# ---------------------------------------------------------------------
+# 1) Load PDFs into LangChain Document objects
+# ---------------------------------------------------------------------
 def load_pdfs_return_docs(pdf_dir: Path):
     """Loads all PDFs from directory and returns LangChain Document objects."""
     docs = []
@@ -43,6 +47,10 @@ def load_pdfs_return_docs(pdf_dir: Path):
             print(f"[RAG] Failed reading {pdf_path.name}: {e}")
     return docs
 
+
+# ---------------------------------------------------------------------
+# 2) Build Retriever (Vector Database)
+# ---------------------------------------------------------------------
 def build_retriever():
     """Builds and caches the retriever from PDFs."""
     global retriever
@@ -61,6 +69,33 @@ def build_retriever():
     retriever  = vectordb.as_retriever(search_kwargs={"k": 5})
     return retriever
 
+
+# ---------------------------------------------------------------------
+# 3) Format Retrieved Documents (CLEAN & MAKE READABLE)
+# ---------------------------------------------------------------------
+def format_docs(retrieved_docs):
+    """Clean and format PDF text before giving it to the LLM."""
+    cleaned_texts = []
+    for d in retrieved_docs:
+        text = d.page_content
+
+        # 1. Remove markdown bold (**) or other unwanted characters
+        text = text.replace("**", "")
+
+        # 2. Add line breaks before numbered items (1. 2. 3.)
+        text = re.sub(r"(\d+\.)\s*", r"\n\1 ", text)
+
+        # 3. Remove excessive blank lines
+        text = re.sub(r"\n{3,}", "\n\n", text)
+
+        cleaned_texts.append(text.strip())
+
+    return "\n\n".join(cleaned_texts)
+
+
+# ---------------------------------------------------------------------
+# 4) Get LLM Client (OpenAI, Groq, Google)
+# ---------------------------------------------------------------------
 def get_llm(provider: str, model_name: str):
     if provider == "openai":
         if not OPENAI_API_KEY:
@@ -79,6 +114,10 @@ def get_llm(provider: str, model_name: str):
         return llm, f"Google/{model_name}"
     raise ValueError("Unknown provider")
 
+
+# ---------------------------------------------------------------------
+# 5) Create RAG Chain
+# ---------------------------------------------------------------------
 def create_rag_chain(provider: str, model_name: str):
     r = build_retriever()
 
@@ -88,7 +127,7 @@ You are a helpful assistant.
 Answer ONLY from the provided document context.
 If the context is insufficient, say you don't know.
 You are a company assistant and will assist the fellow employee in Bangla if the user writes in Bangla, otherwise answer in English.
-Be descriptive, use bullet points where helpful, and point to where more info can be found in the PDF.
+Be descriptive and well-structured. Use line breaks and bullet points where possible.
 
 Context:
 {context}
@@ -97,9 +136,6 @@ Question: {question}
 """,
         input_variables=["context", "question"],
     )
-
-    def format_docs(retrieved_docs):
-        return "\n\n".join(d.page_content for d in retrieved_docs if d.page_content)
 
     llm, llm_desc = get_llm(provider, model_name)
 
@@ -112,6 +148,10 @@ Question: {question}
 
     return chain, llm_desc
 
+
+# ---------------------------------------------------------------------
+# 6) Utility Functions (LLM Config & Answering)
+# ---------------------------------------------------------------------
 def llm_options() -> Dict[str, Any]:
     return {
         "providers": {
@@ -122,11 +162,13 @@ def llm_options() -> Dict[str, Any]:
         "current": current_llm_config,
     }
 
+
 def set_default_llm(provider: str, model: str) -> Dict[str, str]:
     global current_llm_config
     _llm, desc = get_llm(provider, model)
     current_llm_config = {"provider": provider, "model": model}
     return {"provider": provider, "model": model, "description": desc}
+
 
 def answer_question(question: str, provider: Optional[str], model_name: Optional[str]) -> Tuple[str, str]:
     p = provider or current_llm_config["provider"]
