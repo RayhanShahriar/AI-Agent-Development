@@ -1,47 +1,61 @@
+# In your forms.py
 from django import forms
 
 class LoginForm(forms.Form):
-    email = forms.EmailField(widget=forms.EmailInput(attrs={
-        "class": "form-control",
-        "placeholder": "Email"
-    }))
-    password = forms.CharField(widget=forms.PasswordInput(attrs={
-        "class": "form-control",
-        "placeholder": "Password"
-    }))
-
-
-class SignUpForm(forms.Form):
-    name = forms.CharField(
-        widget=forms.TextInput(attrs={
-            "class": "form-control",
-            "placeholder": "Enter your full name",
-            "autocomplete" : "off"
-        })
+    LOGIN_TYPE_CHOICES = [
+        ('user', 'User'),
+        ('admin', 'Admin'),
+    ]
+    
+    login_type = forms.ChoiceField(
+        choices=LOGIN_TYPE_CHOICES,
+        widget=forms.RadioSelect,
+        initial='user',
+        required=True
     )
     email = forms.EmailField(
         widget=forms.EmailInput(attrs={
-            "class": "form-control",
-            "placeholder": "Enter your email",
-            "autocomplete" : "off"
+            'placeholder': 'Enter your email address',
+            'class': 'form-control'
         })
     )
     password = forms.CharField(
         widget=forms.PasswordInput(attrs={
-            "class": "form-control",
-            "placeholder": "Enter your password",
-            "autocomplete" : "off"
+            'placeholder': 'Enter your password',
+            'class': 'form-control'
+        })
+    )
+
+class SignUpForm(forms.Form):
+    name = forms.CharField(
+        max_length=100,
+        widget=forms.TextInput(attrs={
+            'placeholder': 'Enter your full name',
+            'class': 'form-control'
+        })
+    )
+    email = forms.EmailField(
+        widget=forms.EmailInput(attrs={
+            'placeholder': 'Enter your email address',
+            'class': 'form-control'
+        })
+    )
+    password = forms.CharField(
+        widget=forms.PasswordInput(attrs={
+            'placeholder': 'Create a password',
+            'class': 'form-control'
         })
     )
     password2 = forms.CharField(
         widget=forms.PasswordInput(attrs={
-            "class": "form-control",
-            "placeholder": "Confirm password",
-            "autocomplete" : "off"
+            'placeholder': 'Confirm your password',
+            'class': 'form-control'
         })
     )
     tc = forms.BooleanField(
         required=True,
-        label="I accept the Terms & Conditions",
-        widget=forms.CheckboxInput(attrs={"class": "form-check-input"})
+        widget=forms.CheckboxInput(attrs={
+            'class': 'form-check-input'
+        }),
+        label="I agree to the Terms and Conditions"
     )

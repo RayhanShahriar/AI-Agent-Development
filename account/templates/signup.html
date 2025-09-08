@@ -3,40 +3,168 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <title>Sign Up</title>
-  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@700;900&display=swap" rel="stylesheet">
-
-  <link rel="stylesheet" href="{% static 'css/style.css' %}">
-  <style>
-  button {
-    margin-top: 10px;
-
-    }
-  </style>
-  </head>
-
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sign Up - AI Assistant</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{% static 'css/signup.css' %}">
+</head>
 <body>
-  <div class="login-box">
-    <h2>Sign Up</h2>
+    <div class="signup-container">
+        <div class="signup-card">
+            <!-- Header Section -->
+            <div class="signup-header">
+                <div class="signup-icon">
+                    <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+                        <circle cx="8.5" cy="7" r="4"></circle>
+                        <line x1="20" y1="8" x2="20" y2="14"></line>
+                        <line x1="23" y1="11" x2="17" y2="11"></line>
+                    </svg>
+                </div>
+                <h1 class="signup-title">Create Account</h1>
+                <p class="signup-subtitle">Join us today and get started</p>
+            </div>
 
-    <form method="post" autocomplete="off">
-      {% csrf_token %}
+            <!-- Messages Section -->
+            {% if messages %}
+            <div class="messages-container">
+                {% for message in messages %}
+                    <div class="message-item {{ message.tags }}">
+                        <div class="message-icon">
+                            {% if message.tags == 'success' %}
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
+                                    <polyline points="22,4 12,14.01 9,11.01"></polyline>
+                                </svg>
+                            {% elif message.tags == 'warning' %}
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path>
+                                    <line x1="12" y1="9" x2="12" y2="13"></line>
+                                    <line x1="12" y1="17" x2="12.01" y2="17"></line>
+                                </svg>
+                            {% elif message.tags == 'error' %}
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <circle cx="12" cy="12" r="10"></circle>
+                                    <line x1="15" y1="9" x2="9" y2="15"></line>
+                                    <line x1="9" y1="9" x2="15" y2="15"></line>
+                                </svg>
+                            {% else %}
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <circle cx="12" cy="12" r="10"></circle>
+                                    <path d="M12 16v-4"></path>
+                                    <path d="M12 8h.01"></path>
+                                </svg>
+                            {% endif %}
+                        </div>
+                        <span class="message-text">{{ message }}</span>
+                    </div>
+                {% endfor %}
+            </div>
+            {% endif %}
 
-      {{ form.name }}
-      {{ form.email }}
-      {{ form.password }}
-      {{ form.password2 }}
+            <!-- Signup Form -->
+            <form method="post" class="signup-form" autocomplete="off">
+                {% csrf_token %}
+                
+                <div class="form-group">
+                    <label for="{{ form.name.id_for_label }}" class="form-label">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                            <circle cx="12" cy="7" r="4"></circle>
+                        </svg>
+                        Full Name
+                    </label>
+                    {{ form.name }}
+                </div>
 
-      <div class="form-check mt-3">
-        {{ form.tc }}
-        <label class="form-check-label">{{ form.tc.label }}</label>
-      </div>
+                <div class="form-group">
+                    <label for="{{ form.email.id_for_label }}" class="form-label">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path>
+                            <polyline points="22,6 12,13 2,6"></polyline>
+                        </svg>
+                        Email Address
+                    </label>
+                    {{ form.email }}
+                </div>
 
-      <button type="submit" class="btn btn-success mt-3">Register</button>
-    </form>
-  </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="{{ form.password.id_for_label }}" class="form-label">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+                                <circle cx="12" cy="16" r="1"></circle>
+                                <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+                            </svg>
+                            Password
+                        </label>
+                        {{ form.password }}
+                    </div>
+
+                    <div class="form-group">
+                        <label for="{{ form.password2.id_for_label }}" class="form-label">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+                                <circle cx="12" cy="16" r="1"></circle>
+                                <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+                            </svg>
+                            Confirm Password
+                        </label>
+                        {{ form.password2 }}
+                    </div>
+                </div>
+
+                <!-- Terms and Conditions -->
+                <div class="checkbox-group">
+                    <label class="checkbox-label">
+                        {{ form.tc }}
+                        <div class="checkbox-content">
+                            <div class="checkbox-icon">
+                                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3">
+                                    <polyline points="20,6 9,17 4,12"></polyline>
+                                </svg>
+                            </div>
+                            <div class="checkbox-text">
+                                <span class="checkbox-title">{{ form.tc.label }}</span>
+                                <span class="checkbox-desc">By creating an account, you agree to our terms of service and privacy policy</span>
+                            </div>
+                        </div>
+                    </label>
+                </div>
+
+                <div class="form-actions">
+                    <button type="submit" class="btn-signup">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+                            <circle cx="8.5" cy="7" r="4"></circle>
+                            <line x1="20" y1="8" x2="20" y2="14"></line>
+                            <line x1="23" y1="11" x2="17" y2="11"></line>
+                        </svg>
+                        Create Account
+                    </button>
+                </div>
+            </form>
+
+            <!-- Footer Section -->
+            <div class="signup-footer">
+                <div class="divider">
+                    <span class="divider-text">Already have an account?</span>
+                </div>
+                
+                <div class="signin-section">
+                    <p class="signin-text">Welcome back! Sign in to continue</p>
+                    <a href="{% url 'login_page' %}" class="btn-signin">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"></path>
+                            <polyline points="10,17 15,12 10,7"></polyline>
+                            <line x1="15" y1="12" x2="3" y2="12"></line>
+                        </svg>
+                        Sign In
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
 </body>
-
 </html>
-

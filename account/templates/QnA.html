@@ -12,7 +12,10 @@
 <body>
     <!-- Sidebar -->
     <div class="sidebar">
-        <h2>⚙️ Configuration</h2>
+        <div class="sidebar-header">
+            <h2>AI Assistant</h2>
+            <p class="sidebar-subtitle">Configuration</p>
+        </div>
         
         <form action="{% url 'configure_llm' %}" method="post" class="llm-form">
             {% csrf_token %}
@@ -29,58 +32,96 @@
 
             <div class="form-group">
                 <label for="model_name">Model</label>
-                <input type="text" name="model_name" id="model_name" value="{{ current.model|default:provider_models.0 }}" placeholder="Enter model name">
+                <input type="text" name="model_name" id="model_name" value="{{ default_model }}" placeholder="Enter model name">
             </div>
 
-            <button type="submit" class="btn-save">💾 Save Configuration</button>
+            <button type="submit" class="btn-save">Save Configuration</button>
         </form>
 
         <div class="status-indicator">
-            <strong>Status:</strong> {{ status_msg }}
+            <div class="status-dot"></div>
+            <span>{{ status_msg }}</span>
+        </div>
+
+        <div class="sidebar-footer">
+            <form action="{% url 'clear_chat' %}" method="post">
+                {% csrf_token %}
+                <button type="submit" class="btn-clear">Clear Conversation</button>
+            </form>
         </div>
     </div>
 
     <!-- Main Content -->
     <div class="main-content">
-        <div class="qna-container">
-            <div class="qna-header">
-                <h1>🤖 Welcome, What's Your Query?</h1>
-                <p>Ask me anything and I'll help you find the answers</p>
-            </div>
-
-            <!-- Search Bar -->
-            <form action="{% url 'rag_qna_page' %}" method="post" class="ask-form">
-                {% csrf_token %}
-                <div class="search-container">
-                    <div class="search-bar">
+        <!-- Welcome Screen (shows when no chat) -->
+        {% if not chat %}
+        <div class="welcome-screen">
+            <div class="welcome-content">
+                <h1 class="welcome-title">What can I help you with today?</h1>
+                <p class="welcome-subtitle">Ask me anything and I'll provide detailed, helpful responses</p>
+                
+                <!-- Centered Search Bar for Welcome -->
+                <form action="{% url 'rag_qna_page' %}" method="post" class="welcome-search-form">
+                    {% csrf_token %}
+                    <div class="welcome-search-container">
                         {{ ask_form.question }}
-                        <button type="submit" class="search-btn">🔍</button>
+                        <button type="submit" class="welcome-search-btn">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+                                <path d="M21 12L3 12M21 12L15 18M21 12L15 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                            </svg>
+                        </button>
                     </div>
-                </div>
-            </form>
-
-            <!-- Chat Display -->
-            <div class="chat-container">
-                <div class="chat-box">
-                    {% for message in chat %}
-                        <div class="chat-msg {{ message.who }}">
-                            <strong>{{ message.who|title }}:</strong> {{ message.text|safe }}
-                            {% if message.llm %}<small class="llm-info">(LLM: {{ message.llm }})</small>{% endif %}
-                        </div>
-                    {% empty %}
-                        <div class="empty-chat">
-                            <p>💬 No chat history yet. Ask your first question!</p>
-                        </div>
-                    {% endfor %}
-                </div>
+                </form>
             </div>
-
-            <!-- Clear Chat -->
-            <form action="{% url 'clear_chat' %}" method="post">
-                {% csrf_token %}
-                <button type="submit" class="btn-clear">🗑️ Clear Chat History</button>
-            </form>
         </div>
+        {% endif %}
+
+        <!-- Chat Interface (shows when chat exists) -->
+        {% if chat %}
+        <div class="chat-interface">
+            <div class="chat-messages">
+                {% for message in chat %}
+                    <div class="message-container {{ message.who }}">
+                        <div class="message-content">
+                            <div class="message-header">
+                                <div class="message-avatar">
+                                    {% if message.who == 'user' %}
+                                        <span class="avatar-text">You</span>
+                                    {% else %}
+                                        <span class="avatar-icon">🤖</span>
+                                    {% endif %}
+                                </div>
+                                <div class="message-meta">
+                                    <span class="message-sender">{{ message.who|title }}</span>
+                                    {% if message.llm %}<span class="message-model">{{ message.llm }}</span>{% endif %}
+                                </div>
+                            </div>
+                            <div class="message-text">
+                                {{ message.text|safe }}
+                            </div>
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+        </div>
+
+        <!-- Fixed Bottom Search Bar for Chat -->
+        <div class="bottom-search-bar">
+            <div class="bottom-search-container">
+                <form action="{% url 'rag_qna_page' %}" method="post" class="bottom-search-form">
+                    {% csrf_token %}
+                    <div class="bottom-search-input-container">
+                        {{ ask_form.question }}
+                        <button type="submit" class="bottom-search-btn">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+                                <path d="M21 12L3 12M21 12L15 18M21 12L15 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                            </svg>
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+        {% endif %}
     </div>
 </body>
 </html>

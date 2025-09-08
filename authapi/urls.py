@@ -19,16 +19,18 @@ from django.urls import path, include
 from account.views import *
 
 
+
 urlpatterns = [
     path('', signup_page, name="signup_page"),
     path('admin/', admin.site.urls),
     path('api/user/', include('account.urls')),
     path("login/", login_page, name="login_page"),
-    path("signup/",signup_page, name="signup_page"),
+    path("signup/", signup_page, name="signup_page"),
     path("qna/", qna_page, name="qna_page"),
-    path("api/rag/", include("rag.api_urls")),  # <-- REST API
-    path("rag/", include("rag.urls")), 
-   
+    path("admin-dashboard/", admin_page, name="admin_page"),  # <-- NEW
+    path("api/rag/", include("rag.api_urls")),
+    path("rag/", include("rag.urls")),
 ]
+
 
 
