@@ -87,58 +87,41 @@ def login_page(request):
     if request.method == "POST":
         form = LoginForm(request.POST)
         if form.is_valid():
-            login_type = form.cleaned_data["login_type"]  # <-- NEW: user/admin
-            email = form.cleaned_data["email"]
+            login_type = form.cleaned_data["login_type"]  # "user" or "admin"
+            username = form.cleaned_data["username"]      # <-- changed from email
             password = form.cleaned_data["password"]
 
-            # Call API for login
-            response = requests.post("http://127.0.0.1:8000/api/user/login/", json={
-                "email": email,
-                "password": password
+            # Call FastAPI login endpoint
+            response = requests.post("http://127.0.0.1:8000/auth/login", json={
+                "username": username,
+                "password": password,
+                "role": login_type
             })
 
             if response.status_code == 200:
                 data = response.json()
-                access_token = data["token"]["access"]
-                refresh_token = data["token"]["refresh"]
+                access_token = data["access_token"]
 
-                # Store tokens in session
+                # Store token in session
                 request.session["access"] = access_token
-                request.session["refresh"] = refresh_token
 
-                # ✅ Get user profile to check role
-                profile_response = requests.get(
-                    "http://127.0.0.1:8000/api/user/profile/",
-                    headers={"Authorization": f"Bearer {access_token}"}
-                )
-
-                if profile_response.status_code == 200:
-                    profile_data = profile_response.json()
-                    print("DEBUG PROFILE:", profile_data)  # 👈 DEBUGGING
-
-                    # ✅ Properly convert is_staff to boolean
-                    is_staff = str(profile_data.get("is_staff", "false")).lower() in ["true", "1"]
-
-                    if login_type == "admin":
-                        if is_staff:
-                            messages.success(request, "✅ Logged in as Admin")
-                            return redirect("upload_pdf")  # <-- Create this view/template
-                        else:
-                            messages.error(request, "❌ You are not authorized as Admin")
-                            return redirect("login_page")
-                    else:
-                        messages.success(request, "✅ Logged in successfully")
-                        return redirect("rag_qna_page")  # Normal user goes to QnA page
-
+                # Redirect based on role
+                if login_type == "admin":
+                    messages.success(request, "✅ Logged in as Admin")
+                    return redirect("upload_pdf")  # Admin dashboard
                 else:
-                    messages.error(request, "⚠️ Could not fetch profile details")
-                    return redirect("login_page")
+                    messages.success(request, "✅ Logged in successfully")
+                    return redirect("rag_qna_page")  # Normal user QnA page
+
             else:
-                messages.error(request, "❌ Invalid email or password")
+                error_msg = response.json().get("detail", "❌ Invalid credentials")
+                messages.error(request, error_msg)
+                return redirect("login_page")
     else:
         form = LoginForm()
 
     return render(request, "login.html", {"form": form})
+
 
 
 
@@ -150,31 +133,37 @@ def signup_page(request):
     if request.method == "POST":
         form = SignUpForm(request.POST)
         if form.is_valid():
-            name = form.cleaned_data["name"]
+            username = form.cleaned_data["username"]  # Use username field instead of full name
             email = form.cleaned_data["email"]
             password = form.cleaned_data["password"]
             password2 = form.cleaned_data["password2"]
-            tc = form.cleaned_data["tc"]
+           
 
             if password != password2:
                 messages.error(request, "Passwords do not match ❌")
                 return render(request, "signup.html", {"form": form})
 
-            if not tc:
-                messages.error(request, "You must accept Terms & Conditions ❌")
-                return render(request, "signup.html", {"form": form})
+            
 
-            # Call API for registration
-            response = requests.post("http://127.0.0.1:8000/api/user/register/", json={
-                "name": name,
-                "email": email,
+            # Payload for FastAPI
+            payload = {
+                "username": username,
                 "password": password,
-                "password2": password2,
-                "tc": tc
-            })
+                "confirm_password": password2,
+                "email": email
+            }
 
-            if response.status_code == 201:
+            # Call FastAPI registration endpoint
+            response = requests.post("http://127.0.0.1:8000/auth/register", json=payload)
+
+            if response.status_code in [200, 201]:
+                # Registration successful in FastAPI backend
                 messages.success(request, "✅ Registration successful, please login!")
+
+                # Also create Django user
+                if not User.objects.filter(username=username).exists():
+                    User.objects.create_user(username=username, email=email, password=password)
+
                 return redirect("login_page")
             else:
                 messages.error(request, "❌ Registration failed: " + str(response.json()))
@@ -183,6 +172,7 @@ def signup_page(request):
         form = SignUpForm()
 
     return render(request, "signup.html", {"form": form})
+
 
 
 

@@ -1,6 +1,6 @@
 # rag/urls.py
 from django.urls import path
-from .views import *
+from .views import QnAPage, ConfigureLLM, ClearChat, UploadPDF
 
 urlpatterns = [
     path("qna/", QnAPage.as_view(), name="rag_qna_page"),

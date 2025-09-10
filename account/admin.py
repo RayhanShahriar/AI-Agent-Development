@@ -1,32 +1,30 @@
 from django.contrib import admin
-from account.models import User
-from django.contrib.auth.admin import UserAdmin as BaseUserModelAdmin
+from django.contrib.auth.admin import UserAdmin as BaseUserAdmin
+from .models import User
+from django.utils.translation import gettext_lazy as _
 
+class UserAdmin(BaseUserAdmin):
+    # Fields to display in admin list view
+    list_display = ('id', 'username', 'email', 'is_admin', 'is_active')  # replaced 'name' with 'username'
+    list_filter = ('is_admin', 'is_active')
+    search_fields = ('username', 'email')
+    ordering = ('id',)
 
-class UserAdmin(BaseUserModelAdmin):
-    
-
-    # The fields to be used in displaying the User model.
-    # These override the definitions on the base UserAdmin
-    # that reference specific fields on auth.User.
-    list_display = ('id', 'email', 'name', 'tc', 'is_admin')
-    list_filter = ('is_admin',)
+    # Fields for the add user form
     fieldsets = (
-        ('User Credentials', {'fields': ('email', 'password')}),
-        ('Personal info', {'fields': ('name', 'tc')}),
-        ('Permissions', {'fields': ('is_admin',)}),
+        (None, {'fields': ('username', 'email', 'password')}),
+        (_('Permissions'), {'fields': ('is_admin', 'is_active')}),
+        (_('Important dates'), {'fields': ('last_login',)}),
     )
-    # add_fieldsets is not a standard ModelAdmin attribute. UserAdmin
-    # overrides get_fieldsets to use this attribute when creating a user.
+
     add_fieldsets = (
         (None, {
             'classes': ('wide',),
-            'fields': ('email', 'name', 'tc' ,'password1', 'password2')}
+            'fields': ('username', 'email', 'password1', 'password2', 'is_admin', 'is_active')}
         ),
     )
-    search_fields = ('email',)
-    ordering = ('email',)
+
     filter_horizontal = ()
 
-# Now register the new UserModelAdmin...
+# Register the updated UserAdmin
 admin.site.register(User, UserAdmin)

@@ -7,4 +7,6 @@ urlpatterns = [
     path("ask/", AskView.as_view(), name="rag_ask"),
     path("llm-options/", LLMOptionsView.as_view(), name="rag_llm_options"),
     path("configure-llm/", ConfigureLLMView.as_view(), name="rag_configure_llm"),
+    
+    
 ]

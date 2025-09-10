@@ -13,9 +13,9 @@ class LoginForm(forms.Form):
         initial='user',
         required=True
     )
-    email = forms.EmailField(
-        widget=forms.EmailInput(attrs={
-            'placeholder': 'Enter your email address',
+    username = forms.CharField(
+        widget=forms.TextInput(attrs={
+            'placeholder': 'Enter your username',
             'class': 'form-control'
         })
     )
@@ -27,10 +27,10 @@ class LoginForm(forms.Form):
     )
 
 class SignUpForm(forms.Form):
-    name = forms.CharField(
+    username = forms.CharField(
         max_length=100,
         widget=forms.TextInput(attrs={
-            'placeholder': 'Enter your full name',
+            'placeholder': 'Enter your username',
             'class': 'form-control'
         })
     )
@@ -52,10 +52,5 @@ class SignUpForm(forms.Form):
             'class': 'form-control'
         })
     )
-    tc = forms.BooleanField(
-        required=True,
-        widget=forms.CheckboxInput(attrs={
-            'class': 'form-check-input'
-        }),
-        label="I agree to the Terms and Conditions"
-    )
+   
+    

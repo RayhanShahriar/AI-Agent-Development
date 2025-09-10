@@ -1,0 +1,79 @@
+{
+  "admin": {
+    "password": "admin123",
+    "role": "admin",
+    "email": null,
+    "full_name": null,
+    "created_at": null
+  },
+  "user": {
+    "password": "user123",
+    "role": "user",
+    "email": null,
+    "full_name": null,
+    "created_at": null
+  },
+  "demo": {
+    "password": "demo123",
+    "role": "user",
+    "email": null,
+    "full_name": null,
+    "created_at": null
+  },
+  "demo_user": {
+    "password": "demo123",
+    "role": "user",
+    "email": "demo@example.com",
+    "full_name": "Demo User",
+    "created_at": "2025-09-10T11:01:15.392285"
+  },
+  "rayhann": {
+    "password": "dkjndjnsY1254@@",
+    "role": "user",
+    "email": "rayhan@gmail.com",
+    "full_name": null,
+    "created_at": "2025-09-10T11:22:02.820927"
+  },
+  "rayhan123": {
+    "password": "dkjndjnsY1254@@",
+    "role": "user",
+    "email": "rayhan123@gmail.com",
+    "full_name": null,
+    "created_at": "2025-09-10T11:25:05.587867"
+  },
+  "rayhan": {
+    "password": "dkjndjnsY1254@@",
+    "role": "user",
+    "email": "rayhan@gmail.com",
+    "full_name": null,
+    "created_at": "2025-09-10T11:42:23.025360"
+  },
+  "rayhan1234": {
+    "password": "dkjndjnsY1254@@",
+    "role": "user",
+    "email": "rayhan1234@gmail.com",
+    "full_name": null,
+    "created_at": "2025-09-10T11:57:49.257114"
+  },
+  "rayhan12345": {
+    "password": "dkjndjnsY1254@@",
+    "role": "user",
+    "email": "rayhan12345@gmail.com",
+    "full_name": null,
+    "created_at": "2025-09-10T11:59:01.715269"
+  },
+  "rayhann123": {
+    "password": "dkjndjnsY1254@@",
+    "role": "user",
+    "email": "rayhann123@gmail.com",
+    "full_name": null,
+    "created_at": "2025-09-10T12:05:02.087021"
+  },
+  "shahriar123": {
+    "password": "dkjndjnsY1254@@",
+    "role": "user",
+    "email": "shahriar123@gmail.com",
+    "full_name": null,
+    "created_at": "2025-09-10T12:12:39.515038"
+  }
+}

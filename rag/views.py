@@ -1,85 +1,87 @@
 from django.shortcuts import render, redirect
 from django.views import View
-import markdown   # ✅ NEW: For converting model output (Markdown) to clean HTML
-
-from .forms import LLMConfigForm, QuestionForm
-from .rag_core import llm_options, set_default_llm, answer_question, build_retriever
-from django.utils.decorators import method_decorator
-from django.contrib.admin.views.decorators import staff_member_required
-from .forms import *
-from .rag_core import build_retriever, PDF_DIR
-from . import rag_core
+from .forms import LLMConfigForm, QuestionForm, PDFUploadForm
 from django.contrib import messages
+from django.conf import settings
+import requests
 from django.utils.text import get_valid_filename
 import os
+from pathlib import Path
 
+FASTAPI_URL = "http://127.0.0.1:8000"  # FastAPI backend URL
 SESSION_KEY = "rag_chat_history"
+PDF_DIR = settings.BASE_DIR / "pdfs"
+
 
 class QnAPage(View):
     template_name = "QnA.html"
 
     def get(self, request):
-        # Ensure retriever is ready, show simple status message
-        status_msg = "RAG ready"
+        # Fetch provider options from FastAPI
         try:
-            build_retriever()
+            resp = requests.get(f"{FASTAPI_URL}/llm-options/")
+            options = resp.json()
         except Exception as e:
-            status_msg = f"RAG not ready: {e}"
+            options = {"providers": {}, "current": {}}
+            messages.warning(request, f"Could not reach backend: {e}")
 
-        options = llm_options()
-        providers = options["providers"]
-        current = options["current"]
+        providers_list = []
+        for key, val in options.get("providers", {}).items():
+            providers_list.append({"name": key, "models": val.get("models", ["default-model"])})
 
-        cur_provider = current.get("provider", "google")
-        provider_models = providers.get(cur_provider, {}).get("models", [])
-        
-        # Ensure provider_models is never empty - provide a fallback
-        if not provider_models:
-            provider_models = ["default-model"]
+        # Current provider/model from session or backend
+        current_provider = request.session.get("current_provider") or options.get("current", {}).get("provider")
+        if not current_provider or current_provider not in [p["name"] for p in providers_list]:
+            current_provider = providers_list[0]["name"] if providers_list else "openai"
 
-        # Get default model name
-        default_model = current.get("model", "")
-        if not default_model and provider_models:
-            default_model = provider_models[0]
+        provider_models = next((p["models"] for p in providers_list if p["name"] == current_provider), ["default-model"])
+        current_model = request.session.get("current_model") or options.get("current", {}).get("model")
+        if current_model not in provider_models:
+            current_model = provider_models[0]
 
-        llm_form = LLMConfigForm(initial={
-            "llm_provider": cur_provider,
-            "model_name": default_model,
-        })
+        llm_form = LLMConfigForm(initial={"llm_provider": current_provider, "model_name": current_model})
         ask_form = QuestionForm()
-
         chat = request.session.get(SESSION_KEY, [])
 
-        ctx = {
-            "status_msg": status_msg,
-            "providers": providers,
-            "current": current,
-            "provider_models": provider_models,  # ✅ This is now guaranteed to be in context
-            "default_model": default_model,      # ✅ Safe default model name
+        return render(request, self.template_name, {
+            "providers": providers_list,
+            "current_provider": current_provider,
+            "provider_models": provider_models,
+            "default_model": current_model,
             "llm_form": llm_form,
             "ask_form": ask_form,
             "chat": chat,
-        }
-        return render(request, self.template_name, ctx)
+            "status_msg": "Backend ready"
+        })
 
     def post(self, request):
-        # Handle question submission
         ask_form = QuestionForm(request.POST)
         if not ask_form.is_valid():
-            # Instead of showing error, just reload page
+            messages.error(request, "Invalid question.")
             return redirect("rag_qna_page")
 
-        q = ask_form.cleaned_data["question"]
+        question = ask_form.cleaned_data["question"]
+
+        provider = request.session.get("current_provider", "openai")
+        model_name = request.session.get("current_model", "gpt-4o-mini")
 
         try:
-            answer, llm_used = answer_question(q, provider=None, model_name=None)
-            answer_html = markdown.markdown(answer)  # ✅ Converts markdown (*, **, etc.) to clean HTML
-        except Exception:
+            resp = requests.post(f"{FASTAPI_URL}/ask/", json={
+                "question": question,
+                "llm_provider": provider,
+                "model_name": model_name
+            })
+            resp.raise_for_status()
+            data = resp.json()
+            answer = data.get("answer", "No answer")
+            llm_used = data.get("llm_used", "")
+        except Exception as e:
+            messages.error(request, f"Backend error: {e}")
             return redirect("rag_qna_page")
 
         chat = request.session.get(SESSION_KEY, [])
-        chat.append({"who": "user", "text": q})
-        chat.append({"who": "bot", "text": answer_html, "llm": llm_used})
+        chat.append({"who": "user", "text": question})
+        chat.append({"who": "bot", "text": answer, "llm": llm_used})
         request.session[SESSION_KEY] = chat
         request.session.modified = True
 
@@ -90,13 +92,30 @@ class ConfigureLLM(View):
     def post(self, request):
         form = LLMConfigForm(request.POST)
         if not form.is_valid():
+            messages.error(request, "Invalid configuration.")
             return redirect("rag_qna_page")
 
-        data = form.cleaned_data
+        provider = form.cleaned_data["llm_provider"]
+        model_name = form.cleaned_data["model_name"]
+
         try:
-            set_default_llm(data["llm_provider"], data["model_name"])
-        except Exception:
-            pass  # silently ignore errors
+            headers = {"Authorization": "Bearer admin_secret_token_2024"}
+            resp = requests.post(
+                f"{FASTAPI_URL}/configure-llm/",
+                json={"llm_provider": provider, "model_name": model_name},
+                headers=headers,
+                timeout=5
+            )
+            resp.raise_for_status()
+            messages.success(request, f"LLM configured: {provider.title()} ({model_name})")
+
+            # Save in session
+            request.session["current_provider"] = provider
+            request.session["current_model"] = model_name
+            request.session.modified = True
+
+        except requests.RequestException as e:
+            messages.warning(request, f"Could not configure LLM: {e}")
 
         return redirect("rag_qna_page")
 
@@ -105,34 +124,25 @@ class ClearChat(View):
     def post(self, request):
         request.session[SESSION_KEY] = []
         request.session.modified = True
+        messages.info(request, "Conversation cleared.")
         return redirect("rag_qna_page")
 
 
-
-@method_decorator(staff_member_required, name="dispatch") #before you run dispatch(), first run staff_member_required
 class UploadPDF(View):
     template_name = "uploadPDF.html"
 
     def get(self, request):
         form = PDFUploadForm()
+        return render(request, self.template_name, {"form": form})
 
-        return render(request, self.template_name, {'form': form})
-    
     def post(self, request):
-        # Bind form with uploaded data
         form = PDFUploadForm(request.POST, request.FILES)
-
-        # If invalid (wrong type/size), re-render the page with errors
         if not form.is_valid():
             return render(request, self.template_name, {"form": form})
 
-        # Get the validated file
         pdf_file = form.cleaned_data["pdf_file"]
 
-        # Ensure target directory exists
         PDF_DIR.mkdir(parents=True, exist_ok=True)
-
-        # Sanitize filename and prevent overwriting existing files
         base_name, ext = os.path.splitext(pdf_file.name)
         base_name = get_valid_filename(base_name) or "document"
         ext = ".pdf"
@@ -142,20 +152,9 @@ class UploadPDF(View):
             candidate = PDF_DIR / f"{base_name}_{i}{ext}"
             i += 1
 
-        # Save file in chunks to avoid memory issues
         with open(candidate, "wb+") as destination:
             for chunk in pdf_file.chunks():
                 destination.write(chunk)
 
-        # Reset retriever so it indexes the new file
-        rag_core.retriever = None
-        try:
-            build_retriever()
-            messages.success(request, f"Uploaded and indexed: {candidate.name}")
-        except Exception as e:
-            messages.warning(
-                request,
-                f"Uploaded {candidate.name}, but indexing failed: {e}"
-            )
-
+        messages.success(request, f"PDF uploaded: {candidate.name}")
         return redirect("upload_pdf")

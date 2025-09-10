@@ -27,7 +27,7 @@ urlpatterns = [
     path("login/", login_page, name="login_page"),
     path("signup/", signup_page, name="signup_page"),
     path("qna/", qna_page, name="qna_page"),
-    path("admin-dashboard/", admin_page, name="admin_page"),  # <-- NEW
+    
     path("api/rag/", include("rag.api_urls")),
     path("rag/", include("rag.urls")),
 ]

@@ -68,14 +68,14 @@
                 {% csrf_token %}
                 
                 <div class="form-group">
-                    <label for="{{ form.name.id_for_label }}" class="form-label">
+                    <label for="{{ form.username.id_for_label }}" class="form-label">
                         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                             <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
                             <circle cx="12" cy="7" r="4"></circle>
                         </svg>
-                        Full Name
+                        Username
                     </label>
-                    {{ form.name }}
+                    {{ form.username }}
                 </div>
 
                 <div class="form-group">
@@ -115,24 +115,7 @@
                     </div>
                 </div>
 
-                <!-- Terms and Conditions -->
-                <div class="checkbox-group">
-                    <label class="checkbox-label">
-                        {{ form.tc }}
-                        <div class="checkbox-content">
-                            <div class="checkbox-icon">
-                                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3">
-                                    <polyline points="20,6 9,17 4,12"></polyline>
-                                </svg>
-                            </div>
-                            <div class="checkbox-text">
-                                <span class="checkbox-title">{{ form.tc.label }}</span>
-                                <span class="checkbox-desc">By creating an account, you agree to our terms of service and privacy policy</span>
-                            </div>
-                        </div>
-                    </label>
-                </div>
-
+               
                 <div class="form-actions">
                     <button type="submit" class="btn-signup">
                         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">

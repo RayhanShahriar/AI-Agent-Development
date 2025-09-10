@@ -1,5 +1,4 @@
 {% load static %}
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -16,15 +15,25 @@
             <h2>AI Assistant</h2>
             <p class="sidebar-subtitle">Configuration</p>
         </div>
-        
+
+        <!-- Messages -->
+        {% if messages %}
+        <div class="messages-container">
+            {% for message in messages %}
+                <div class="message {{ message.tags }}">{{ message }}</div>
+            {% endfor %}
+        </div>
+        {% endif %}
+
+        <!-- LLM Configuration Form -->
         <form action="{% url 'configure_llm' %}" method="post" class="llm-form">
             {% csrf_token %}
             <div class="form-group">
                 <label for="llm_provider">Provider</label>
                 <select name="llm_provider" id="llm_provider">
-                    {% for provider, data in providers.items %}
-                        <option value="{{ provider }}" {% if current.provider == provider %}selected{% endif %}>
-                            {{ provider }}
+                    {% for provider in providers %}
+                        <option value="{{ provider.name }}" {% if provider.name == current_provider %}selected{% endif %}>
+                            {{ provider.name|title }}
                         </option>
                     {% endfor %}
                 </select>
@@ -32,7 +41,13 @@
 
             <div class="form-group">
                 <label for="model_name">Model</label>
-                <input type="text" name="model_name" id="model_name" value="{{ default_model }}" placeholder="Enter model name">
+                <select name="model_name" id="model_name">
+                    {% for model in provider_models %}
+                        <option value="{{ model }}" {% if model == default_model %}selected{% endif %}>
+                            {{ model }}
+                        </option>
+                    {% endfor %}
+                </select>
             </div>
 
             <button type="submit" class="btn-save">Save Configuration</button>
@@ -53,30 +68,23 @@
 
     <!-- Main Content -->
     <div class="main-content">
-        <!-- Welcome Screen (shows when no chat) -->
         {% if not chat %}
         <div class="welcome-screen">
             <div class="welcome-content">
                 <h1 class="welcome-title">What can I help you with today?</h1>
                 <p class="welcome-subtitle">Ask me anything and I'll provide detailed, helpful responses</p>
-                
-                <!-- Centered Search Bar for Welcome -->
+
                 <form action="{% url 'rag_qna_page' %}" method="post" class="welcome-search-form">
                     {% csrf_token %}
                     <div class="welcome-search-container">
                         {{ ask_form.question }}
-                        <button type="submit" class="welcome-search-btn">
-                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
-                                <path d="M21 12L3 12M21 12L15 18M21 12L15 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                            </svg>
-                        </button>
+                        <button type="submit" class="welcome-search-btn">Ask</button>
                     </div>
                 </form>
             </div>
         </div>
         {% endif %}
 
-        <!-- Chat Interface (shows when chat exists) -->
         {% if chat %}
         <div class="chat-interface">
             <div class="chat-messages">
@@ -96,29 +104,22 @@
                                     {% if message.llm %}<span class="message-model">{{ message.llm }}</span>{% endif %}
                                 </div>
                             </div>
-                            <div class="message-text">
-                                {{ message.text|safe }}
-                            </div>
+                            <div class="message-text">{{ message.text|linebreaksbr|safe }}</div>
                         </div>
                     </div>
                 {% endfor %}
             </div>
-        </div>
 
-        <!-- Fixed Bottom Search Bar for Chat -->
-        <div class="bottom-search-bar">
-            <div class="bottom-search-container">
-                <form action="{% url 'rag_qna_page' %}" method="post" class="bottom-search-form">
-                    {% csrf_token %}
-                    <div class="bottom-search-input-container">
-                        {{ ask_form.question }}
-                        <button type="submit" class="bottom-search-btn">
-                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
-                                <path d="M21 12L3 12M21 12L15 18M21 12L15 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                            </svg>
-                        </button>
-                    </div>
-                </form>
+            <div class="bottom-search-bar">
+                <div class="bottom-search-container">
+                    <form action="{% url 'rag_qna_page' %}" method="post" class="bottom-search-form">
+                        {% csrf_token %}
+                        <div class="bottom-search-input-container">
+                            {{ ask_form.question }}
+                            <button type="submit" class="bottom-search-btn">Ask</button>
+                        </div>
+                    </form>
+                </div>
             </div>
         </div>
         {% endif %}
