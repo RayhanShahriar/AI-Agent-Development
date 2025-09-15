@@ -80,6 +80,12 @@ body {
     font-weight: 400;
 }
 
+.image{
+    height: 50px;
+    width: 200px;
+    margin-bottom: 30px;
+}
+
 /* ===== MESSAGES SECTION ===== */
 .messages-container {
     margin-bottom: 24px;

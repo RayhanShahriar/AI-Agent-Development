@@ -2,17 +2,7 @@
 from django import forms
 
 class LoginForm(forms.Form):
-    LOGIN_TYPE_CHOICES = [
-        ('user', 'User'),
-        ('admin', 'Admin'),
-    ]
     
-    login_type = forms.ChoiceField(
-        choices=LOGIN_TYPE_CHOICES,
-        widget=forms.RadioSelect,
-        initial='user',
-        required=True
-    )
     username = forms.CharField(
         widget=forms.TextInput(attrs={
             'placeholder': 'Enter your username',

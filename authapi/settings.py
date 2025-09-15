@@ -10,7 +10,10 @@ from dotenv import load_dotenv
 
 # Build paths inside the project
 BASE_DIR = Path(__file__).resolve().parent.parent
-RAG_PDF_DIR = BASE_DIR / "pdfs"      # PDFs are uploaded here
+
+MEDIA_URL = "/media/"
+MEDIA_ROOT = BASE_DIR / "media"
+RAG_PDF_DIR = MEDIA_ROOT / "pdfs"      # PDFs are uploaded here
 RAG_INDEX_DIR = BASE_DIR / "data" / "index"   # FAISS index (not used in frontend)
 
 # Load .env from project root
@@ -113,6 +116,8 @@ STATIC_URL = "static/"
 STATICFILES_DIRS = [
     os.path.join(BASE_DIR, "static"),
 ]
+
+
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 AUTH_USER_MODEL = "account.User"

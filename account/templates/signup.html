@@ -5,11 +5,36 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sign Up - AI Assistant</title>
+    <title>Sign Up - StudyNet</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="{% static 'css/signup.css' %}">
+    <link rel="icon" type="image/x-icon" href="">
 </head>
 <body>
+<!-- Navbar -->
+    <nav class="navbar">
+        <div class="navbar-container">
+            <a href="{% url 'rag_qna_page' %}" class="navbar-logo">
+                <div class="logo-icon">
+                    
+                </div>
+               
+            </a>
+
+             <div class="navbar-actions">
+                <a href="{% url 'login_page' %}" class="navbar-btn btn-login">LOGIN</a>
+                <a href="#" class="navbar-btn btn-signup">SIGN UP</a> 
+            </div>
+
+
+            <button class="mobile-menu-btn">
+                <span></span>
+                <span></span>
+                <span></span>
+            </button>
+        </div>
+    </nav>
+
     <div class="signup-container">
         <div class="signup-card">
             <!-- Header Section -->
@@ -149,5 +174,13 @@
             </div>
         </div>
     </div>
+
+    <div class="footer">
+                
+    </div>
+
+      
 </body>
+
+
 </html>

@@ -15,7 +15,8 @@ from .forms import *
 from django.contrib.auth.decorators import login_required
 from django.shortcuts import render, redirect
 from django.contrib import messages
-
+from django.contrib.auth import get_user_model
+from django.contrib.auth import authenticate, login, logout
 
 
 
@@ -48,15 +49,15 @@ class UserLoginView(APIView):
     def post(self,request, format = None):
         serializer = UserLoginSerializer(data = request.data)
         if serializer.is_valid(raise_exception = True):
-            email = serializer.data.get('email')
+            username = serializer.data.get('username')
             password = serializer.data.get('password')
-            user = authenticate(username = email, password = password)
+            user = authenticate(username = username, password = password)
             if user is not None:
                 token= get_tokens_for_user(user)
                 return Response({'token': token,'msg':'Login Successful'}, status = status.HTTP_200_OK)
             
             else:
-                return Response({'errors': {'non_field_errors': ['Email or password is not valid']}}, status= status.HTTP_404_NOT_FOUND)
+                return Response({'errors': {'non_field_errors': ['Username or password is not valid']}}, status= status.HTTP_404_NOT_FOUND)
         return Response(serializer.errors, status= status.HTTP_400_BAD_REQUEST)
     
 
@@ -87,36 +88,21 @@ def login_page(request):
     if request.method == "POST":
         form = LoginForm(request.POST)
         if form.is_valid():
-            login_type = form.cleaned_data["login_type"]  # "user" or "admin"
-            username = form.cleaned_data["username"]      # <-- changed from email
+            username = form.cleaned_data["username"]
             password = form.cleaned_data["password"]
 
-            # Call FastAPI login endpoint
-            response = requests.post("http://127.0.0.1:8000/auth/login", json={
-                "username": username,
-                "password": password,
-                "role": login_type
-            })
-
-            if response.status_code == 200:
-                data = response.json()
-                access_token = data["access_token"]
-
-                # Store token in session
-                request.session["access"] = access_token
+            user = authenticate(request, username=username, password=password)
+            if user is not None:
+                login(request, user)  # logs in the user
+                messages.success(request, "✅ Logged in successfully!")
 
                 # Redirect based on role
-                if login_type == "admin":
-                    messages.success(request, "✅ Logged in as Admin")
-                    return redirect("upload_pdf")  # Admin dashboard
+                if getattr(user, "is_staff", False) or getattr(user, "is_superuser", False):
+                    return redirect("rag_qna_page_admin")
                 else:
-                    messages.success(request, "✅ Logged in successfully")
-                    return redirect("rag_qna_page")  # Normal user QnA page
-
+                    return redirect("rag_qna_page")
             else:
-                error_msg = response.json().get("detail", "❌ Invalid credentials")
-                messages.error(request, error_msg)
-                return redirect("login_page")
+                messages.error(request, "❌ Invalid username or password")
     else:
         form = LoginForm()
 
@@ -125,54 +111,40 @@ def login_page(request):
 
 
 
-
-
 #####Sign Up####
+
+User = get_user_model()  # Use custom user model
 
 def signup_page(request):
     if request.method == "POST":
         form = SignUpForm(request.POST)
         if form.is_valid():
-            username = form.cleaned_data["username"]  # Use username field instead of full name
+            username = form.cleaned_data["username"]
             email = form.cleaned_data["email"]
             password = form.cleaned_data["password"]
             password2 = form.cleaned_data["password2"]
-           
 
             if password != password2:
                 messages.error(request, "Passwords do not match ❌")
                 return render(request, "signup.html", {"form": form})
 
-            
-
-            # Payload for FastAPI
-            payload = {
-                "username": username,
-                "password": password,
-                "confirm_password": password2,
-                "email": email
-            }
-
-            # Call FastAPI registration endpoint
-            response = requests.post("http://127.0.0.1:8000/auth/register", json=payload)
-
-            if response.status_code in [200, 201]:
-                # Registration successful in FastAPI backend
-                messages.success(request, "✅ Registration successful, please login!")
-
-                # Also create Django user
-                if not User.objects.filter(username=username).exists():
-                    User.objects.create_user(username=username, email=email, password=password)
-
-                return redirect("login_page")
-            else:
-                messages.error(request, "❌ Registration failed: " + str(response.json()))
+            # Check if username or email already exists
+            if User.objects.filter(username=username).exists():
+                messages.error(request, "Username already exists ❌")
                 return render(request, "signup.html", {"form": form})
+            
+            if User.objects.filter(email=email).exists():
+                messages.error(request, "Email already exists ❌")
+                return render(request, "signup.html", {"form": form})
+
+            # Create Django user using custom model
+            User.objects.create_user(username=username, email=email, password=password)
+            messages.success(request, "✅ Registration successful, please login!")
+            return redirect("login_page")
     else:
         form = SignUpForm()
 
     return render(request, "signup.html", {"form": form})
-
 
 
 

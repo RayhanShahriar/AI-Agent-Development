@@ -1,23 +1,20 @@
 {% load static %}
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Pdf Upload - Studynet</title>
+    <title>AI Assistant - Studynet</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="{% static 'css/uploadPDF.css' %}">
+    <link rel="stylesheet" href="{% static 'css/QnA_admin.css' %}">
 </head>
 <body>
 
-     <!-- Navbar -->
+    <!-- Navbar -->
     <nav class="navbar">
         <div class="navbar-container">
             <a href="{% url 'rag_qna_page_admin' %}" class="navbar-logo">
-                <div class="logo-icon">
-                    
-                </div>
+                <div class="logo-icon"></div>
             </a>
 
             <div class="navbar-actions">
@@ -42,7 +39,7 @@
                             </svg>
                             Admin
                         </a>
-                        <a href="{% url 'rag_qna_page_admin' %}" class="dropdown-item">
+                        <a href="{% url 'upload_pdf' %}" class="dropdown-item">
                             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                                 <path d="M14 2H6C5.46957 2 4.96086 2.21071 4.58579 2.58579C4.21071 2.96086 4 3.46957 4 4V20C4 20.5304 4.21071 21.0391 4.58579 21.4142C4.96086 21.7893 5.46957 22 6 22H18C18.5304 22 19.0391 21.7893 19.4142 21.4142C19.7893 21.0391 20 20.5304 20 20V8L14 2Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
                                 <path d="M14 2V8H20" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
@@ -50,15 +47,14 @@
                                 <path d="M16 17H8" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
                                 <path d="M10 9H8" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
                             </svg>
-                            AI Assistant
+                            Upload PDF
                         </a>
                     </div>
                 </div>
+
                 <a href="{% url 'login_page' %}" class="navbar-btn btn-login">Logout</a>
-                <!--<a href="#" class="navbar-btn btn-signup">Sign Up</a> -->
             </div>
 
-    
             <button class="mobile-menu-btn">
                 <span></span>
                 <span></span>
@@ -67,144 +63,123 @@
         </div>
     </nav>
 
+    <!-- Sidebar -->
+<div class="sidebar">
+    <div class="sidebar-header">
+        <h2>AI Assistant Admin</h2>
+        <p class="sidebar-subtitle">Configuration</p>
+    </div>
 
-    <div class="sidebar">
-        <div class="sidebar-header">
-            <h2>Available PDFs</h2>
+    <!-- Messages -->
+    {% if messages %}
+    <div class="messages-container">
+        {% for message in messages %}
+            <div class="message {{ message.tags }}">{{ message }}</div>
+        {% endfor %}
+    </div>
+    {% endif %}
 
+    <!-- LLM Configuration Form -->
+    <form action="{% url 'configure_llm_admin' %}" method="post" class="llm-form">
+        {% csrf_token %}
+        <div class="form-group">
+            <label for="llm_provider">Provider</label>
+            <select name="llm_provider" id="llm_provider">
+                {% for p in providers %}
+                    <option value="{{ p.name }}" {% if p.name == current_provider %}selected{% endif %}>
+                        {{ p.name|title }}
+                    </option>
+                {% endfor %}
+            </select>
         </div>
 
-        <!-- Messages -->
-        <div class="pdf-list">
-            {% if pdf_files %}
-                {% for pdf in pdf_files %}
-                    <div class="pdf-item">
-                    <a href="{{ pdf.url }}" target="_blank">{{ pdf.name }}</a>
+        <div class="form-group">
+            <label for="model_name">Model</label>
+            <select name="model_name" id="model_name">
+                {% for model in provider_models %}
+                    <option value="{{ model }}" {% if model == default_model %}selected{% endif %}>
+                        {{ model }}
+                    </option>
+                {% endfor %}
+            </select>
+        </div>
+
+        <button type="submit" class="btn-save">Save Configuration</button>
+    </form>
+
+    <div class="status-indicator">
+        <div class="status-dot"></div>
+        <span>{{ status_msg }}</span>
+    </div>
+
+    <div class="sidebar-footer">
+        <form action="{% url 'clear_chat_admin' %}" method="post">
+            {% csrf_token %}
+            <button type="submit" class="btn-clear">Clear Conversation</button>
+        </form>
+    </div>
+</div>
+
+    <!-- Main Content -->
+    <div class="main-content">
+        {% if not chat %}
+        <div class="welcome-screen">
+            <div class="welcome-content">
+                <h1 class="welcome-title">What can I help you with today?</h1>
+                <p class="welcome-subtitle">Ask me anything and I'll provide detailed, helpful responses</p>
+
+                <form action="{% url 'rag_qna_page_admin' %}" method="post" class="welcome-search-form">
+                    {% csrf_token %}
+                    <div class="welcome-search-container">
+                        {{ ask_form.question }}
+                        <button type="submit" class="welcome-search-btn">Ask</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+        {% endif %}
+
+        {% if chat %}
+        <div class="chat-interface">
+            <div class="chat-messages">
+                {% for message in chat %}
+                    <div class="message-container {{ message.who }}">
+                        <div class="message-content">
+                            <div class="message-header">
+                                <div class="message-avatar">
+                                    {% if message.who == 'user' %}
+                                        <span class="avatar-text">You</span>
+                                    {% else %}
+                                        <span class="avatar-icon">🤖</span>
+                                    {% endif %}
+                                </div>
+                                <div class="message-meta">
+                                    <span class="message-sender">{{ message.who|title }}</span>
+                                    {% if message.llm %}<span class="message-model">{{ message.llm }}</span>{% endif %}
+                                </div>
+                            </div>
+                            <!-- ✅ Render HTML safely -->
+                            <div class="message-text">{{ message.text|linebreaksbr|safe }}</div>
+                        </div>
                     </div>
                 {% endfor %}
-            {% else %}
-                <p style="padding: 16px; color: #301934;">No PDFs uploaded yet.</p>
-            {% endif %}
-        </div>
+            </div>
 
+            <div class="bottom-search-bar">
+                <div class="bottom-search-container">
+                    <form action="{% url 'rag_qna_page_admin' %}" method="post" class="bottom-search-form">
+                        {% csrf_token %}
+                        <div class="bottom-search-input-container">
+                            {{ ask_form.question }}
+                            <button type="submit" class="bottom-search-btn">Ask</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+        {% endif %}
     </div>
 
 
-
-
-
-
-    <div class="main-container">
-        <div class="upload-card">
-            <!-- Header Section -->
-            <div class="upload-header">
-                <div class="upload-icon">
-                    <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
-                        <polyline points="14,2 14,8 20,8"></polyline>
-                        <line x1="16" y1="13" x2="8" y2="13"></line>
-                        <line x1="16" y1="17" x2="8" y2="17"></line>
-                        <polyline points="10,9 9,9 8,9"></polyline>
-                    </svg>
-                </div>
-                <h1 class="upload-title">Upload New PDF</h1>
-                <p class="upload-subtitle">Add documents to your knowledge base</p>
-            </div>
-
-            <!-- Messages Section -->
-            {% if messages %}
-            <div class="messages-container">
-                {% for message in messages %}
-                    <div class="message-item {{ message.tags }}">
-                        <div class="message-icon">
-                            {% if message.tags == 'success' %}
-                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                    <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
-                                    <polyline points="22,4 12,14.01 9,11.01"></polyline>
-                                </svg>
-                            {% elif message.tags == 'warning' %}
-                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                    <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path>
-                                    <line x1="12" y1="9" x2="12" y2="13"></line>
-                                    <line x1="12" y1="17" x2="12.01" y2="17"></line>
-                                </svg>
-                            {% elif message.tags == 'error' %}
-                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                    <circle cx="12" cy="12" r="10"></circle>
-                                    <line x1="15" y1="9" x2="9" y2="15"></line>
-                                    <line x1="9" y1="9" x2="15" y2="15"></line>
-                                </svg>
-                            {% else %}
-                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                    <circle cx="12" cy="12" r="10"></circle>
-                                    <path d="M12 16v-4"></path>
-                                    <path d="M12 8h.01"></path>
-                                </svg>
-                            {% endif %}
-                        </div>
-                        <span class="message-text">{{ message }}</span>
-                    </div>
-                {% endfor %}
-            </div>
-            {% endif %}
-
-            <!-- Upload Form -->
-            <form method="post" enctype="multipart/form-data" class="upload-form">
-                {% csrf_token %}
-                
-                <div class="file-upload-area">
-                    <div class="file-upload-content">
-                        <div class="file-upload-icon">
-                            <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
-                                <polyline points="7,10 12,15 17,10"></polyline>
-                                <line x1="12" y1="15" x2="12" y2="3"></line>
-                            </svg>
-                        </div>
-                        <h3 class="file-upload-title">Choose PDF file</h3>
-                        <p class="file-upload-description">Drag and drop your file here or click to browse</p>
-                        {{ form.as_p }}
-                    </div>
-                </div>
-
-                <div class="upload-actions">
-                    <button type="submit" class="btn-upload">
-                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
-                            <polyline points="17,8 12,3 7,8"></polyline>
-                            <line x1="12" y1="3" x2="12" y2="15"></line>
-                        </svg>
-                        Upload PDF
-                    </button>
-                </div>
-            </form>
-
-            <!-- Footer Info -->
-            <div class="upload-footer">
-                <div class="upload-requirements">
-                    <div class="requirement-item">
-                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
-                            <polyline points="14,2 14,8 20,8"></polyline>
-                        </svg>
-                        <span>PDF files only</span>
-                    </div>
-                    <div class="requirement-item">
-                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                            <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path>
-                        </svg>
-                        <span>Maximum 20 MB</span>
-                    </div>
-                    <div class="requirement-item">
-                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                            <path d="M9 12l2 2 4-4"></path>
-                            <path d="M21 12c.552 0 1-.448 1-1V5c0-.552-.448-1-1-1H3c-.552 0-1 .448-1 1v6c0 .552.448 1 1 1h18z"></path>
-                        </svg>
-                        <span>Auto-processed for search</span>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
 </body>
 </html>

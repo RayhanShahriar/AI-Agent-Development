@@ -13,13 +13,299 @@ body {
         #672162 65%,
         #9B2063 100%
     );
-    min-height: 100vh;
+ 
     display: flex;
     align-items: center;
     justify-content: center;
     padding: 20px;
     color: #301934;
+    max-height: 100vh;
+    
 }
+
+/* ===== NAVBAR ===== */
+.navbar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    background: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(20px);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.18);
+    padding: 16px 24px;
+    z-index: 1000;
+    transition: all 0.3s ease;
+    animation: slideInDown 0.5s ease;
+    height: 100px;
+    
+}
+
+.navbar-container {
+    max-width: 2000px;
+    margin: 10px auto;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.navbar-logo {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    text-decoration: none;
+    color: #301934;
+    font-weight: 700;
+    font-size: 20px;
+    transition: all 0.3s ease;
+    
+}
+
+.navbar-logo:hover {
+    color: #672162;
+    transform: translateY(-1px);
+}
+
+.logo-icon {
+    width: 100px;
+    height: 30px;
+    background-image: url("../images/logo.png");
+    background-size:contain;
+    background-position: center;
+    background-repeat: no-repeat;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    
+   
+
+}
+.navbar-actions {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-left: 1500px;
+    
+}
+
+.navbar-btn {
+    padding: 10px 20px;
+    border-radius: 20px;
+    text-decoration: none;
+    font-weight: 500;
+    font-size: 15px;
+    transition: all 0.3s ease;
+    border: 2px solid transparent;
+  
+}
+
+.btn-login {
+    color: #301934;
+    background: transparent;
+    
+}
+
+.btn-login:hover {
+    background: rgba(48, 25, 52, 0.1);
+    color: #672162;
+}
+
+.btn-signup {
+    color: white;
+    background: linear-gradient(135deg, #672162 0%, #9B2063 100%);
+    box-shadow: 0 4px 15px rgba(103, 33, 98, 0.2);
+}
+
+.btn-signup:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(103, 33, 98, 0.3);
+}
+
+
+/* ===== SIDEBAR STYLES ===== */
+.sidebar {
+    width: 300px;
+    background: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(20px);
+    border-right: 1px solid rgba(255, 255, 255, 0.2);
+    display: flex;
+    flex-direction: column;
+    position: fixed;
+    left: 0;
+    top: 100px; /* Adjusted for navbar */
+    z-index: 100;
+    padding: 0;
+    height: 100vh;
+   
+
+    overflow-y: auto; /* scroll if content exceeds max-height */
+
+    font-size: 12px;
+    
+}
+
+/* Sidebar PDF list */
+.pdf-list {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    padding: 0 20px;
+    gap: 6px;
+    
+}
+
+.sidebar-header {
+    padding: 24px 20px;
+    
+     background: linear-gradient(
+        135deg,
+        #282F43 0%,
+        #3E3664 30%,
+        #672162 65%,
+        #9B2063 100%
+    );
+}
+
+.sidebar-header h2 {
+    color: #ffffff;
+    font-size: 20px;
+    font-weight: 600;
+    margin-bottom: 4px;
+    text-align: center;
+}
+
+.pdf-item a{
+    text-decoration: none;
+    color: black;
+ 
+    
+}
+
+
+
+.pdf-item {
+    margin-top: 15px;
+    word-wrap: break-word;          /* wrap text to next line if too long */
+    overflow-wrap: break-word;      /* safer fallback */
+    white-space: normal;
+    padding: 10px;
+    font-size: 15px;
+  
+   
+}
+
+.pdf-item:hover {
+    background: rgb(219, 219, 219);
+    border-radius: 10px;
+    padding: 10px;
+    
+    
+}
+
+
+/* ===== SETTINGS DROPDOWN ===== */
+.settings-dropdown {
+    position: relative;
+    display: inline-block;
+}
+
+.settings-btn {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 16px;
+    background: transparent;
+    border: 2px solid transparent;
+    border-radius: 20px;
+    color: #301934;
+    font-weight: 500;
+    font-size: 15px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    font-family: inherit;
+    text-decoration: none;
+}
+
+.settings-btn:hover {
+    background: rgba(48, 25, 52, 0.1);
+    color: #672162;
+}
+
+.dropdown-arrow {
+    transition: transform 0.3s ease;
+}
+
+.settings-dropdown:hover .dropdown-arrow {
+    transform: rotate(180deg);
+    
+}
+
+.settings-dropdown-menu {
+    display: none;
+    position: absolute;
+    top: 100%;
+    right: 0;
+    background: rgba(255, 255, 255, 0.98);
+    backdrop-filter: blur(20px);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 12px;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+    min-width: 180px;
+    
+}
+.dropdown-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 12px 16px;
+    color: #301934;
+    text-decoration: none;
+    font-size: 14px;
+    font-weight: 500;
+    transition: all 0.2s ease;
+    border-bottom: 1px solid rgba(48, 25, 52, 0.08);
+    white-space: nowrap;
+}
+
+.dropdown-item:last-child {
+    border-bottom: none;
+}
+
+.dropdown-item:first-child {
+    border-radius: 12px 12px 0 0;
+}
+
+.dropdown-item:last-child {
+    border-radius: 0 0 12px 12px;
+}
+
+.dropdown-item:only-child {
+    border-radius: 12px;
+}
+
+.dropdown-item:hover {
+    background: rgba(103, 33, 98, 0.08);
+    color: #672162;
+}
+
+.dropdown-item svg {
+    flex-shrink: 0;
+    opacity: 0.7;
+    transition: opacity 0.2s ease;
+}
+
+.dropdown-item:hover svg {
+    opacity: 1;
+}
+
+.settings-dropdown:hover .settings-dropdown-menu {
+    display: block;
+}
+
+
+
+
+
 
 /* ===== MAIN CONTAINER ===== */
 .main-container {
@@ -29,6 +315,9 @@ body {
     justify-content: center;
     align-items: center;
     min-height: 100vh;
+    margin-top: 150px;
+  
+    
 }
 
 .upload-card {
@@ -194,40 +483,7 @@ body {
     margin-bottom: 20px;
 }
 
-/* ===== FORM STYLING ===== */
-.upload-form p {
-    margin: 0;
-}
 
-.upload-form label {
-    display: block;
-    font-size: 14px;
-    font-weight: 500;
-    color: #301934;
-    margin-bottom: 8px;
-}
-
-.upload-form input[type="file"] {
-    width: 100%;
-    padding: 12px 16px;
-    border: 2px solid #e2e8f0;
-    border-radius: 12px;
-    background: white;
-    font-size: 14px;
-    color: #301934;
-    transition: all 0.3s ease;
-    cursor: pointer;
-}
-
-.upload-form input[type="file"]:focus {
-    outline: none;
-    border-color: #672162;
-    box-shadow: 0 0 0 3px rgba(103, 33, 98, 0.1);
-}
-
-.upload-form input[type="file"]:hover {
-    border-color: #672162;
-}
 
 /* ===== UPLOAD ACTIONS ===== */
 .upload-actions {
@@ -376,7 +632,7 @@ body {
     }
     to {
         opacity: 1;
-        transform: translateY(0);
+        transform: translateY(-5px);
     }
 }
 
@@ -421,3 +677,7 @@ body {
     opacity: 1;
     transform: translateX(2px);
 }
+
+
+
+
